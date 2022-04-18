@@ -1,2 +1,6 @@
 node_modules
 .env
+/.idea/modules.xml
+/.idea/vadimcppbot.iml
+/.idea/vcs.xml
+/.idea/.gitignore
