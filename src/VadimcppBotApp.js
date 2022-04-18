@@ -19,10 +19,9 @@ class VadimcppBotApp {
         parse_mode: "HTML",
         disable_web_page_preview: true,
       });
-    } else {
-      // NOTE!
-      // This is public chat
-      // TODO:
+    } else { // This is public chat
+      console.log('TODO: implement');
+      bot.sendMessage(msg.chat.id, "TODO: implement");
     }
   }
 
