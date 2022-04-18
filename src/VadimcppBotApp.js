@@ -21,7 +21,6 @@ class VadimcppBotApp {
       });
     } else { // This is public chat
       console.log('TODO: implement');
-      bot.sendMessage(msg.chat.id, "TODO: implement");
     }
   }
 
