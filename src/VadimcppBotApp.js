@@ -24,7 +24,7 @@ const PRIVATE_VOCABULARY = [
       'Добрий вечір',
       "Здоровеньки були",
     ],
-    answer: 'Давайте сразу к делу. Какой у Вас вопрос?',
+    answer: 'Привет 👋',
   },
   {
     questions: [
@@ -37,7 +37,7 @@ const PRIVATE_VOCABULARY = [
       'Как поживаешь?',
       'Что делаешь?',
     ],
-    answer: 'Я работаю. Какой у Вас вопрос?',
+    answer: 'Все хорошо. Чем могу помочь?',
   },
 ];
 
@@ -82,6 +82,15 @@ class VadimcppBotApp {
   handleMessage(msg, bot) {
     console.log(''); // NOTE! view logs on your server
     console.log(JSON.stringify(msg));
+
+    if (msg.text === '/start') {
+      const startAnswer = `${this._getName(msg)}, привет. Чем могу помочь?`;
+      bot.sendMessage(msg.chat.id, startAnswer, {
+        parse_mode: "HTML",
+        disable_web_page_preview: true,
+      }).then();
+      return;
+    }
 
     const isPrivateMsg = msg.chat.id > 0;
     if (isPrivateMsg) {
