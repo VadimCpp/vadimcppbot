@@ -1,4 +1,4 @@
-const PUBLIC_VOCABULARY = [
+const ANY_PUBLIC_CHAT_VOCABULARY = [
   {
     questions: [
       'Привет',
@@ -8,8 +8,26 @@ const PUBLIC_VOCABULARY = [
   },
 ];
 
-const PRIVATE_VOCABULARY = [
-  ...PUBLIC_VOCABULARY,
+
+const BORINORGE_CHAT_ID = -1001784009474;
+const BORINORGE_CHAT_VOCABULARY = [
+  {
+    questions: [ 'розмовляти українською?' ],
+    answer: 'Розмовляти українською - чудово! 🇺🇦',
+  },
+  {
+    questions: [ 'курси норвезької мови' ],
+    answer: 'Запрошую разом вивчати новезьку мову в мій Інстаграм - [kom.fra.ukraina](https://instagram.com/kom.fra.ukraina)',
+  },
+  {
+    questions: [ 'украинцам проезд бесплатный?' ],
+    answer: 'Официально бесплатный проезд только в центр приема беженцев.',
+  },
+];
+
+const PRIVATE_CHAT_VOCABULARY = [
+  ...ANY_PUBLIC_CHAT_VOCABULARY,
+  ...BORINORGE_CHAT_VOCABULARY,
   {
     questions: [
       'Привет',
@@ -41,14 +59,6 @@ const PRIVATE_VOCABULARY = [
   },
 ];
 
-// TODO: implement
-function extractQuestionOrGreeting(text) {
-  if (text.toLowerCase() === "привет" || text.toLowerCase() === "всем привет") {
-    return "привет";
-  }
-  return null;
-}
-
 function normalizeText(text) {
   // remove spaces
   let normalized = text.trim();
@@ -61,14 +71,6 @@ function normalizeText(text) {
 
   // replace 'ё' to 'е'
   normalized = normalized.replace('ё', 'е');
-
-  // remove dots, commas, spaces etc.
-  normalized = normalized.replace('.', '');
-  normalized = normalized.replace(' ', '');
-  normalized = normalized.replace(',', '');
-  normalized = normalized.replace('\n', '');
-  normalized = normalized.replace('!', '');
-  normalized = normalized.replace('?', '');
 
   return normalized;
 }
@@ -83,36 +85,41 @@ class VadimcppBotApp {
     console.log(''); // NOTE! view logs on your server
     console.log(JSON.stringify(msg));
 
-    if (msg.text === '/start') {
-      const startAnswer = `${this._getName(msg)}, привет. Чем могу помочь?`;
-      bot.sendMessage(msg.chat.id, startAnswer, {
-        parse_mode: "HTML",
-        disable_web_page_preview: true,
-      }).then();
-      return;
-    }
-
     const isPrivateMsg = msg.chat.id > 0;
     if (isPrivateMsg) {
-      // In private chat bot react on every message
-      const answer = this._getAnswer(msg.text, PRIVATE_VOCABULARY);
-      const alternative = `${this._getName(msg)}, я не знаю, спроси пожалуйста в @borinorge. Я там учусь.`;
-      bot.sendMessage(msg.chat.id, answer || alternative, {
-        parse_mode: "HTML",
-        disable_web_page_preview: true,
-      }).then();
+      if (msg.text === '/start') {
+        const startAnswer = `${this._getName(msg)}, привет. Чем могу помочь?`;
+        bot.sendMessage(msg.chat.id, startAnswer, {
+          parse_mode: "Markdown",
+          disable_web_page_preview: true,
+        }).then();
+      } else {
+        // In private chat bot react on every message
+        const answer = this._getAnswer(msg.text, PRIVATE_CHAT_VOCABULARY);
+        const alternative = `${this._getName(msg)}, я не знаю, спроси пожалуйста в @borinorge. Я там учусь.`;
+        bot.sendMessage(msg.chat.id, answer || alternative, {
+          parse_mode: "Markdown",
+          disable_web_page_preview: true,
+        }).then();
+      }
+    } else if (msg.chat.id === BORINORGE_CHAT_ID) {
+      const answer = this._getAnswer(msg.text, BORINORGE_CHAT_VOCABULARY);
+      if (answer) {
+        bot.sendMessage(msg.chat.id, answer, {
+          parse_mode: "Markdown",
+          disable_web_page_preview: true,
+          reply_to_message_id: msg.message_id,
+        }).then();
+      }
     } else {
       // In public groups bot react only to questions and greetings
-      const question = extractQuestionOrGreeting(msg.text || '');
-      if (question) {
-        const answer = this._getAnswer(msg.text, PUBLIC_VOCABULARY);
-        if (answer) {
-          bot.sendMessage(msg.chat.id, answer, {
-            parse_mode: "HTML",
-            disable_web_page_preview: true,
-            reply_to_message_id: msg.message_id,
-          }).then();
-        }
+      const answer = this._getAnswer(msg.text, ANY_PUBLIC_CHAT_VOCABULARY);
+      if (answer) {
+        bot.sendMessage(msg.chat.id, answer, {
+          parse_mode: "HTML",
+          disable_web_page_preview: true,
+          reply_to_message_id: msg.message_id,
+        }).then();
       }
     }
   }
@@ -123,7 +130,7 @@ class VadimcppBotApp {
       for (let j = 0; j < option.questions.length; j++) {
         const normalizedMsgText = normalizeText(text);
         const normalizedQuestion = normalizeText(option.questions[j]);
-        if (normalizedMsgText === normalizedQuestion) {
+        if (normalizedMsgText.indexOf(normalizedQuestion) !== -1) {
           console.log('Found answer for question: ', normalizedMsgText);
           return option.answer;
         }
