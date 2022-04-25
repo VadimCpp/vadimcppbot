@@ -8,7 +8,6 @@ const ANY_PUBLIC_CHAT_VOCABULARY = [
   },
 ];
 
-
 const BORINORGE_CHAT_ID = -1001784009474;
 const BORINORGE_CHAT_VOCABULARY = [
   {
@@ -25,9 +24,24 @@ const BORINORGE_CHAT_VOCABULARY = [
   },
 ];
 
+const KOVCHEG_CHAT_ID = -1001536533168;
+const KOVCHEG_CHAT_VOCABULARY = [
+  {
+    questions: [
+      'получения рабочей визы',
+      'получение рабочей визы',
+      'получить рабочую визу'
+    ],
+    answer:
+      'В большинстве рабочая виза это Skilled worker, но есть и другие случаи. Ссылка: ' +
+      '[UDI = work immigration](https://www.udi.no/en/want-to-apply/work-immigration/?c=rus)',
+  },
+];
+
 const PRIVATE_CHAT_VOCABULARY = [
   ...ANY_PUBLIC_CHAT_VOCABULARY,
   ...BORINORGE_CHAT_VOCABULARY,
+  ...KOVCHEG_CHAT_VOCABULARY,
   {
     questions: [
       'Привет',
@@ -104,6 +118,15 @@ class VadimcppBotApp {
       }
     } else if (msg.chat.id === BORINORGE_CHAT_ID) {
       const answer = this._getAnswer(msg.text, BORINORGE_CHAT_VOCABULARY);
+      if (answer) {
+        bot.sendMessage(msg.chat.id, answer, {
+          parse_mode: "Markdown",
+          disable_web_page_preview: true,
+          reply_to_message_id: msg.message_id,
+        }).then();
+      }
+    } else if (msg.chat.id === KOVCHEG_CHAT_ID) {
+      const answer = this._getAnswer(msg.text, KOVCHEG_CHAT_VOCABULARY);
       if (answer) {
         bot.sendMessage(msg.chat.id, answer, {
           parse_mode: "Markdown",
