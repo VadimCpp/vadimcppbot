@@ -34,7 +34,7 @@ const KOVCHEG_CHAT_VOCABULARY = [
     ],
     answer:
       'В большинстве рабочая виза это Skilled worker, но есть и другие случаи. Ссылка: ' +
-      '[UDI = work immigration](https://www.udi.no/en/want-to-apply/work-immigration/?c=rus)',
+      '[UDI - work immigration](https://www.udi.no/en/want-to-apply/work-immigration/?c=rus)',
   },
 ];
 
@@ -101,49 +101,42 @@ class VadimcppBotApp {
 
     const isPrivateMsg = msg.chat.id > 0;
     if (isPrivateMsg) {
-      if (msg.text === '/start') {
-        const startAnswer = `${this._getName(msg)}, привет. Чем могу помочь?`;
-        bot.sendMessage(msg.chat.id, startAnswer, {
-          parse_mode: "Markdown",
-          disable_web_page_preview: true,
-        }).then();
-      } else {
-        // In private chat bot react on every message
-        const answer = this._getAnswer(msg.text, PRIVATE_CHAT_VOCABULARY);
-        const alternative = `${this._getName(msg)}, я не знаю, спроси пожалуйста в @borinorge. Я там учусь.`;
-        bot.sendMessage(msg.chat.id, answer || alternative, {
-          parse_mode: "Markdown",
-          disable_web_page_preview: true,
-        }).then();
-      }
+      this._handlePrivate(msg, bot);
     } else if (msg.chat.id === BORINORGE_CHAT_ID) {
-      const answer = this._getAnswer(msg.text, BORINORGE_CHAT_VOCABULARY);
-      if (answer) {
-        bot.sendMessage(msg.chat.id, answer, {
-          parse_mode: "Markdown",
-          disable_web_page_preview: true,
-          reply_to_message_id: msg.message_id,
-        }).then();
-      }
+      this._handleChat(msg, bot, BORINORGE_CHAT_VOCABULARY)
     } else if (msg.chat.id === KOVCHEG_CHAT_ID) {
-      const answer = this._getAnswer(msg.text, KOVCHEG_CHAT_VOCABULARY);
-      if (answer) {
-        bot.sendMessage(msg.chat.id, answer, {
-          parse_mode: "Markdown",
-          disable_web_page_preview: true,
-          reply_to_message_id: msg.message_id,
-        }).then();
-      }
+      this._handleChat(msg, bot, KOVCHEG_CHAT_VOCABULARY)
     } else {
-      // In public groups bot react only to questions and greetings
-      const answer = this._getAnswer(msg.text, ANY_PUBLIC_CHAT_VOCABULARY);
-      if (answer) {
-        bot.sendMessage(msg.chat.id, answer, {
-          parse_mode: "HTML",
-          disable_web_page_preview: true,
-          reply_to_message_id: msg.message_id,
-        }).then();
-      }
+      this._handleChat(msg, bot, ANY_PUBLIC_CHAT_VOCABULARY)
+    }
+  }
+
+  _handlePrivate(msg, bot) {
+    if (msg.text === '/start') {
+      const startAnswer = `${this._getName(msg)}, привет. Чем могу помочь?`;
+      bot.sendMessage(msg.chat.id, startAnswer, {
+        parse_mode: "markdown",
+        disable_web_page_preview: true,
+      }).then();
+    } else {
+      // In private chat bot react on every message
+      const answer = this._getAnswer(msg.text, PRIVATE_CHAT_VOCABULARY);
+      const alternative = `${this._getName(msg)}, я не знаю, спроси пожалуйста у @vadimcpp. Он меня учит.`;
+      bot.sendMessage(msg.chat.id, answer || alternative, {
+        parse_mode: "markdown",
+        disable_web_page_preview: true,
+      }).then();
+    }
+  }
+
+  _handleChat(msg, bot, vocabulary) {
+    const answer = this._getAnswer(msg.text, vocabulary);
+    if (answer) {
+      bot.sendMessage(msg.chat.id, answer, {
+        parse_mode: "markdown",
+        disable_web_page_preview: true,
+        reply_to_message_id: msg.message_id,
+      }).then();
     }
   }
 
